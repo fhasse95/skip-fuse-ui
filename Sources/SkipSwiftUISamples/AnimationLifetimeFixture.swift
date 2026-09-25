@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if os(macOS) && !SKIP_BRIDGE
 import SwiftUI
-import Observation
 #else
 import SkipFuse
 import SkipSwiftUI
@@ -39,8 +38,8 @@ import SkipSwiftUI
 }
 
 /// Reference-property variant of the shared animated source; drag remains separate `@State`.
-@Observable final class AnimationLifetimeAnchor {
-    var position = 0.0
+final class AnimationLifetimeAnchor: ObservableObject {
+    @Published var position = 0.0
 }
 
 /// Owns one observable source shared by separately evaluated, already-mounted consumers.
@@ -67,11 +66,15 @@ import SkipSwiftUI
 public struct SharedAnimationLifetimeConsumer: View {
     let driver: SharedAnimationLifetimeDriver
     let first: Bool
+    @ObservedObject private var anchor: AnimationLifetimeAnchor
+    @ObservedObject private var drag: AnimationLifetimeAnchor
 
     /// Identifies the consumer so tests can measure it across separate rendering roots.
     public init(driver: SharedAnimationLifetimeDriver, first: Bool) {
         self.driver = driver
         self.first = first
+        self.anchor = driver.anchor
+        self.drag = driver.drag
     }
 
     /// Fixed outer bounds keep root layout changes out of the measured displacement.
@@ -79,7 +82,7 @@ public struct SharedAnimationLifetimeConsumer: View {
         (first ? Color.red : Color.green)
             .frame(width: 60, height: 24)
             .accessibilityIdentifier(first ? "lifetime-first" : "lifetime-second")
-            .offset(y: driver.anchor.position + driver.drag.position)
+            .offset(y: anchor.position + drag.position)
             .frame(width: 100, height: 340, alignment: .top)
     }
 }
@@ -91,7 +94,7 @@ public struct AnimationLifetimeFixture: View {
     let useObservable: Bool
     let deferSecondConsumer: Bool
     @State var anchor = 0.0
-    @State var observableAnchor = AnimationLifetimeAnchor()
+    @StateObject var observableAnchor = AnimationLifetimeAnchor()
     @State var drag = 0.0
 
     /// Chooses native value-state or observable-property provenance for the animated source.
