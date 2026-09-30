@@ -43,6 +43,14 @@ extension EnvironmentValues {
         return key(forAny: String(describing: type))
     }
 
+    /// Returns the environment key used to bridge an environment object type.
+    ///
+    /// - Parameter type: The environment object type.
+    /// - Returns: The bridge key for the specified type.
+    static func key(forEnvironmentObject type: Any.Type) -> String {
+        return key(forAny: "environmentObject:\(String(reflecting: type))")
+    }
+
     // MARK: - Builtin EnvironmentValues bridging
     // Note: Must be matched by equivalent code in SkipUI.EnvironmentValues
 
@@ -126,8 +134,6 @@ extension EnvironmentValues {
                 return LegibilityWeight.bold
             case .regular:
                 return LegibilityWeight.regular
-            default:
-                return nil
             }
         case "colorSchemeContrast":
             let rawValue = bridgedValue as? Int
@@ -224,8 +230,6 @@ extension EnvironmentValues {
                 return SkipUI.LegibilityWeight.bold
             case .regular:
                 return SkipUI.LegibilityWeight.regular
-            default:
-                return nil
             }
         case "colorSchemeContrast":
             return (value as? ColorSchemeContrast)?.rawValue
@@ -312,6 +316,20 @@ extension View {
             } else {
                 return view.environment(bridgedKey: key, value: nil)
             }
+        }
+    }
+
+    /// Supplies an observable object to descendant views through the environment.
+    ///
+    /// - Parameter object: The object to store in the environment.
+    /// - Returns: A view with the environment object applied.
+    nonisolated public func environmentObject<ObjectType>(_ object: ObjectType) -> some View where ObjectType : AnyObject {
+        return ModifierView(target: self) {
+            let view = $0.Java_viewOrEmpty
+            let key = EnvironmentValues.key(forEnvironmentObject: ObjectType.self)
+            let ptr = SwiftObjectPointer.pointer(to: Box(object), retain: true)
+            let value = EnvironmentSupport(valueHolder: ptr)
+            return view.environment(bridgedKey: key, value: value)
         }
     }
 }

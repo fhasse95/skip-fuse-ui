@@ -236,10 +236,10 @@ extension Text {
 }
 
 extension Text {
-    public enum TruncationMode : Hashable, Sendable {
-        case head
-        case tail
-        case middle
+    public enum TruncationMode : Int, Hashable, Sendable {
+        case head = 1
+        case tail = 2
+        case middle = 3
     }
 
     public enum Case : Int, Hashable, Sendable {
@@ -554,9 +554,10 @@ extension View {
         stubView()
     }
 
-    @available(*, unavailable)
     nonisolated public func truncationMode(_ mode: Text.TruncationMode) -> some View {
-        stubView()
+        return ModifierView(target: self) {
+            $0.Java_viewOrEmpty.bridgedTruncationMode(rawValue: mode.rawValue)
+        }
     }
 
     @available(*, unavailable)

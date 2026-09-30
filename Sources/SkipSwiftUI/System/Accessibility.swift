@@ -74,7 +74,7 @@ extension View {
         return accessibilityLabel(Text(labelResource), isEnabled: isEnabled)
     }
 
-    @_disfavoredOverload nonisolated public func accessibilityLabel<S>(_ label: S, isEnabled: Bool) -> some View /* ModifiedContent<Self, AccessibilityAttachmentModifier> */ where S : StringProtocol {
+    @_disfavoredOverload nonisolated public func accessibilityLabel<S>(_ label: S, isEnabled: Bool = true) -> some View /* ModifiedContent<Self, AccessibilityAttachmentModifier> */ where S : StringProtocol {
         return accessibilityLabel(Text(label), isEnabled: isEnabled)
     }
 }
