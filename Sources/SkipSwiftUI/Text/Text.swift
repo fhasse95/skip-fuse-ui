@@ -249,6 +249,24 @@ extension Text {
         case head
         case tail
         case middle
+
+        /// Encodes the mode using SkipUI's existing bridge identifiers.
+        var bridgedValue: Int {
+            switch self {
+            case .head: return 1
+            case .tail: return 2
+            case .middle: return 3
+            }
+        }
+
+        /// Decodes a mode, using SwiftUI's tail default when no value is set.
+        init(bridgedValue: Int?) {
+            switch bridgedValue {
+            case 1: self = .head
+            case 3: self = .middle
+            default: self = .tail
+            }
+        }
     }
 
     public enum Case : Int, Hashable, Sendable {
@@ -563,9 +581,11 @@ extension View {
         stubView()
     }
 
-    @available(*, unavailable)
+    /// Sets where overflowing text is replaced by an ellipsis.
+    /// Android supports all three modes for a single line. For multiple lines,
+    /// head and middle use tail truncation, matching SkipUI's Compose behavior.
     nonisolated public func truncationMode(_ mode: Text.TruncationMode) -> some View {
-        stubView()
+        environment(\.truncationMode, mode)
     }
 
     @available(*, unavailable)

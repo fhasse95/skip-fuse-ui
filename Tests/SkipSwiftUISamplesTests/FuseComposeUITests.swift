@@ -79,6 +79,17 @@ final class FuseComposeUITests: XCTestCase {
         #endif
     }
 
+    /// Native truncation modifiers and environment values produce actual ellipses.
+    func testTextTruncation() throws {
+        #if !SKIP
+        throw XCTSkip("Compose UI testing is Android-only")
+        #else
+        try requireBridgedMainActor()
+        composeRule.setContent { TruncationTestFixture().Compose() }
+        assertTextTruncation(composeRule)
+        #endif
+    }
+
     /// Real native attributed values cross the bridge, render as spans, and retain links.
     func testAttributedText() throws {
         #if !SKIP

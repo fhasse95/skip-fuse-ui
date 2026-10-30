@@ -8,6 +8,15 @@ import Foundation
 
 final class TextTests: XCTestCase {
     #if !SKIP
+    func testTruncationModeEnvironmentBridge() throws {
+        XCTAssertEqual(EnvironmentValues.key(for: \.truncationMode), "truncationMode")
+        for (mode, identifier) in [(Text.TruncationMode.head, 1), (.tail, 2), (.middle, 3)] {
+            XCTAssertEqual(EnvironmentValues.bridgeBuiltin(key: "truncationMode", value: mode) as? Int, identifier)
+            XCTAssertEqual(EnvironmentValues.builtin(key: "truncationMode", bridgedValue: identifier) as? Text.TruncationMode, mode)
+        }
+        XCTAssertEqual(EnvironmentValues.builtin(key: "truncationMode", bridgedValue: nil) as? Text.TruncationMode, .tail)
+    }
+
     func testAttributedContentRetainsValueSemantics() throws {
         let original = AttributedString("Hello 👩🏽‍💻")
         var edited = original
